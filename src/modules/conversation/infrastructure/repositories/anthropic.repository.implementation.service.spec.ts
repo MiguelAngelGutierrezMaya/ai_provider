@@ -9,7 +9,9 @@ describe('AnthropicRepositoryImplementationService', () => {
       providers: [AnthropicRepositoryImplementationService],
     }).compile();
 
-    service = module.get<AnthropicRepositoryImplementationService>(AnthropicRepositoryImplementationService);
+    service = module.get<AnthropicRepositoryImplementationService>(
+      AnthropicRepositoryImplementationService,
+    );
   });
 
   it('should be defined', () => {

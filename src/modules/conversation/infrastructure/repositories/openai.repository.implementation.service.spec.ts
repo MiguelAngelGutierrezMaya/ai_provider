@@ -9,7 +9,9 @@ describe('OpenaiRepositoryImplementationService', () => {
       providers: [OpenaiRepositoryImplementationService],
     }).compile();
 
-    service = module.get<OpenaiRepositoryImplementationService>(OpenaiRepositoryImplementationService);
+    service = module.get<OpenaiRepositoryImplementationService>(
+      OpenaiRepositoryImplementationService,
+    );
   });
 
   it('should be defined', () => {

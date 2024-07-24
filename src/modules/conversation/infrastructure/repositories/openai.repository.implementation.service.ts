@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ChatRepository } from '../../models/repositories/chat.repository';
 import {
   BillingInfo,
-  ChatEntity,
+  ChatCompletionEntity,
   ChatResponse,
   SessionChat,
   SessionMessage,
@@ -20,6 +20,7 @@ import {
 } from '../../models/enums/openai.enum';
 import { CustomError } from '../../../shared/models/errors/custom.error';
 import { ChatDatasource } from '../../models/datasource/chat.datasource';
+import { ChatDataSourceUseCase } from '../../application/useCases/chat-data-source.use-case';
 
 @Injectable()
 export class OpenaiRepositoryImplementationService implements ChatRepository {
@@ -33,7 +34,7 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
   ) {}
 
   async chatCompletion(
-    chat: ChatEntity,
+    chat: ChatCompletionEntity,
     data: { [key: string]: any },
   ): Promise<ChatResponse> {
     const { openai } = data;
@@ -42,8 +43,14 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
       throw CustomError.internal('OpenAI API data not found');
     }
 
-    const payload: OpenaiChatEntityRequest =
-      chat.payload as OpenaiChatEntityRequest;
+    const payload: OpenaiChatEntityRequest = {
+      messages: [
+        {
+          role: OpenaiRoleEnum.USER,
+          content: chat.message,
+        },
+      ],
+    } as OpenaiChatEntityRequest;
 
     if (!payload.messages || payload.messages.length === 0) {
       throw CustomError.badRequest('Messages not found');
@@ -51,12 +58,14 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
 
     this.logger.log(`Chat completion with payload: ${JSON.stringify(payload)}`);
 
-    let session: SessionChat | null =
-      await this.chatDatasource.getSession(chat);
-
-    const model: string = OpenaiModelEnum.GPT4O;
+    let session: SessionChat | null = await ChatDataSourceUseCase.getSessions(
+      this.chatDatasource,
+      chat,
+    );
 
     if (!session) {
+      const model: string = OpenaiModelEnum.GPT4O;
+
       const sessionChat: SessionChat = {
         provider: chat.provider,
         session: chat.session,
@@ -66,12 +75,15 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
         messages: [
           {
             role: OpenaiRoleEnum.SYSTEM,
-            content:
-              'You are a helpful assistant who talks like a pirate, your goal is to make social connection with your client to sell them as much liquor as possible',
+            content: {
+              text: 'You are a helpful assistant who talks like a pirate, your goal is to make social connection with your client to sell them as much liquor as possible',
+            },
           },
           {
             role: OpenaiRoleEnum.USER,
-            content: payload.messages[payload.messages.length - 1].content,
+            content: {
+              text: payload.messages[payload.messages.length - 1].content,
+            },
           },
         ],
       };
@@ -80,11 +92,16 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
         `Session not found, creating new session: ${JSON.stringify(sessionChat)}`,
       );
 
-      session = await this.chatDatasource.saveSession(sessionChat);
+      session = await ChatDataSourceUseCase.saveSession(
+        this.chatDatasource,
+        sessionChat,
+      );
     } else {
       const sessionMessage: SessionMessage = {
         role: OpenaiRoleEnum.USER,
-        content: payload.messages[payload.messages.length - 1].content,
+        content: {
+          text: payload.messages[payload.messages.length - 1].content,
+        },
       };
       session.messages.push(sessionMessage);
 
@@ -99,7 +116,7 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
       (message: SessionMessage) =>
         ({
           role: message.role,
-          content: message.content,
+          content: message.content.text || '',
         }) as OpenaiMessage,
     );
 
@@ -116,7 +133,7 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
         Authorization: `Bearer ${apiKey}`,
       },
       body: {
-        model: model,
+        ...session.payload,
         ...payload,
       },
       isFormData: false,
@@ -142,23 +159,29 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
 
       session.messages.push({
         role: OpenaiRoleEnum.ASSISTANT,
-        content: message.content,
+        content: { text: message.content },
       } as SessionMessage);
 
-      const sessionUpdated = await this.chatDatasource.updateSession(session);
+      const sessionUpdated: SessionChat =
+        await ChatDataSourceUseCase.updateSession(this.chatDatasource, session);
 
       this.logger.log(`Session updated: ${JSON.stringify(sessionUpdated)}`);
     }
 
     this.logger.log(`Message from OpenAI: ${JSON.stringify(message)}`);
 
+    const billingInfo: BillingInfo = {
+      context: session,
+      provider: chat.provider,
+      session: chat.session,
+      payload: response,
+    };
+
     const billingResponse: BillingInfo =
-      await this.chatDatasource.storeBillingResponse({
-        context: session,
-        provider: chat.provider,
-        session: chat.session,
-        payload: response,
-      });
+      await ChatDataSourceUseCase.storeBillingResponse(
+        this.chatDatasource,
+        billingInfo,
+      );
 
     this.logger.log(`Billing response: ${JSON.stringify(billingResponse)}`);
 

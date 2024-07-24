@@ -27,7 +27,7 @@ export interface AnthropicMessageContent {
 //
 export interface AnthropicMessage {
   role: AnthropicRoleType;
-  content: string | AnthropicMessageContent[];
+  content: AnthropicMessageContent[];
 }
 
 //

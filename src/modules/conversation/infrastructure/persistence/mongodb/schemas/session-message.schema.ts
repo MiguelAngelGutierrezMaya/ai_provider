@@ -9,10 +9,10 @@ export class SessionMessage {
   role: string;
 
   @Prop({
-    type: String || Object || Array,
+    type: Object,
     required: true,
   })
-  content: string | { [key: string]: any } | { [key: string]: any }[];
+  content: { [key: string]: any };
 
   @Prop({ type: Date, required: true, default: Date.now })
   created_at: Date;

@@ -1,7 +1,13 @@
-import { BillingInfo, ChatEntity, SessionChat } from '../entities/chat.entity';
+import {
+  BillingInfo,
+  ChatCompletionEntity,
+  SessionChat,
+} from '../entities/chat.entity';
 
 export abstract class ChatDatasource {
-  abstract getSession(chatEntity: ChatEntity): Promise<SessionChat | null>;
+  abstract getSession(
+    chatEntity: ChatCompletionEntity,
+  ): Promise<SessionChat | null>;
 
   abstract saveSession(sessionChat: SessionChat): Promise<SessionChat>;
 

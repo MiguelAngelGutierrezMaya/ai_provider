@@ -1,7 +1,7 @@
 import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { ProviderEnum } from '../../../shared/models/enums/provider.enum';
 
-export class ChatDto {
+export class ChatCompletionDto {
   @IsNotEmpty()
   @IsEnum(ProviderEnum)
   readonly provider: string;
@@ -11,5 +11,7 @@ export class ChatDto {
   readonly sessionID: string;
 
   @IsNotEmpty()
-  payload: { [key: string]: any };
+  @IsString()
+  message: string;
+  // payload: { [key: string]: any };
 }

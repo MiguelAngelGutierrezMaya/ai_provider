@@ -9,5 +9,11 @@ export default () => ({
       apiKey: process.env.ANTHROPIC_API_KEY || '',
       apiUrl: process.env.ANTHROPIC_API_URL || '',
     },
+    google: {
+      apiKey: process.env.GOOGLE_API_KEY || '',
+    },
+    huggingFace: {
+      apiKey: process.env.HUGGINGFACE_API_KEY || '',
+    },
   },
 });

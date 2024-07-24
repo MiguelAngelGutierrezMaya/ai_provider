@@ -9,7 +9,9 @@ describe('MongoDatasourceImplementationService', () => {
       providers: [MongoDatasourceImplementationService],
     }).compile();
 
-    service = module.get<MongoDatasourceImplementationService>(MongoDatasourceImplementationService);
+    service = module.get<MongoDatasourceImplementationService>(
+      MongoDatasourceImplementationService,
+    );
   });
 
   it('should be defined', () => {

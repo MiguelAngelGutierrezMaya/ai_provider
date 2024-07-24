@@ -1,7 +1,7 @@
-import { ChatDto } from '../dtos/chat.dto';
+import { ChatCompletionDto } from '../dtos/chat.dto';
 import {
   BillingInfo,
-  ChatEntity,
+  ChatCompletionEntity,
   SessionChat,
   SessionMessage,
 } from '../../models/entities/chat.entity';
@@ -12,8 +12,8 @@ import {
 import { CustomError } from '../../../shared/models/errors/custom.error';
 
 export class ChatMapper {
-  static chatDtoToEntity(chatDto: ChatDto): ChatEntity {
-    const { provider, payload, sessionID } = chatDto;
+  static chatDtoToEntity(chatDto: ChatCompletionDto): ChatCompletionEntity {
+    const { provider, message, sessionID } = chatDto;
 
     if (!provider) {
       throw CustomError.badRequest('Provider is required');
@@ -27,8 +27,8 @@ export class ChatMapper {
       throw CustomError.badRequest('Invalid provider');
     }
 
-    if (!payload) {
-      throw CustomError.badRequest('Payload is required');
+    if (!message) {
+      throw CustomError.badRequest('Message is required');
     }
 
     if (!sessionID) {
@@ -38,7 +38,7 @@ export class ChatMapper {
     return {
       provider: provider as ProviderType,
       session: sessionID,
-      payload: payload,
+      message: message,
     };
   }
 

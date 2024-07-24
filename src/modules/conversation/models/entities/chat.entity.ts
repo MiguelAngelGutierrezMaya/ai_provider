@@ -1,25 +1,21 @@
 import { ProviderType } from '../../../shared/models/enums/provider.enum';
+import { OpenaiChatEntityResponse, OpenaiMessage } from './openai.chat.entity';
 import {
-  OpenaiChatEntityRequest,
-  OpenaiChatEntityResponse,
-  OpenaiMessage,
-} from './openai.chat.entity';
-import {
-  AnthropicChatEntityRequest,
   AnthropicChatEntityResponse,
   AnthropicMessageContent,
 } from './anthropic.chat.entity';
+import {
+  GoogleChatEntityResponse,
+  GoogleMessagePart,
+} from './google.chat.entity';
 
 //
 // ChatEntity
 //
-export interface ChatEntity {
+export interface ChatCompletionEntity {
   provider: ProviderType;
   session: string;
-  payload:
-    | OpenaiChatEntityRequest
-    | AnthropicChatEntityRequest
-    | { [key: string]: any };
+  message: string;
 }
 
 //
@@ -27,7 +23,11 @@ export interface ChatEntity {
 //
 export interface ChatResponse {
   session: string;
-  payload: OpenaiMessage | AnthropicMessageContent | { [key: string]: any };
+  payload:
+    | OpenaiMessage
+    | AnthropicMessageContent
+    | GoogleMessagePart
+    | { [key: string]: any };
 }
 
 //
@@ -41,6 +41,7 @@ export interface BillingInfo {
   payload:
     | OpenaiChatEntityResponse
     | AnthropicChatEntityResponse
+    | GoogleChatEntityResponse
     | { [key: string]: any };
   created_at?: Date;
   updated_at?: Date;
@@ -52,7 +53,7 @@ export interface BillingInfo {
 export interface SessionMessage {
   id?: string;
   role: string;
-  content: string | { [key: string]: any } | { [key: string]: any }[];
+  content: { [key: string]: any };
   created_at?: Date;
   updated_at?: Date;
 }

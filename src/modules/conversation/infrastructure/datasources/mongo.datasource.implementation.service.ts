@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import {
   BillingInfo,
-  ChatEntity,
+  ChatCompletionEntity,
   SessionChat,
 } from '../../models/entities/chat.entity';
 import { ChatMapper } from '../mapper/chat.mapper';
@@ -24,7 +24,9 @@ export class MongoDatasourceImplementationService implements ChatDatasource {
     private readonly billingProviderModel: Model<BillingProvider>,
   ) {}
 
-  async getSession(chatEntity: ChatEntity): Promise<SessionChat | null> {
+  async getSession(
+    chatEntity: ChatCompletionEntity,
+  ): Promise<SessionChat | null> {
     const response = await this.sessionChatModel
       .findOne({
         provider: chatEntity.provider as string,

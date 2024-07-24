@@ -3,7 +3,7 @@ import { ChatRepository } from '../../models/repositories/chat.repository';
 import { HttpUtil } from '../../../shared/models/utils/http.util';
 import {
   BillingInfo,
-  ChatEntity,
+  ChatCompletionEntity,
   ChatResponse,
   SessionChat,
   SessionMessage,
@@ -18,14 +18,11 @@ import { HttpRequestUseCase } from '../../../shared/application/usecases/http-re
 import {
   AnthropicContentType,
   AnthropicModelEnum,
+  AnthropicRoleEnum,
 } from '../../models/enums/anthropic.enum';
 import { CustomError } from '../../../shared/models/errors/custom.error';
 import { ChatDatasource } from '../../models/datasource/chat.datasource';
-import {
-  OpenaiModelEnum,
-  OpenaiRoleEnum,
-} from '../../models/enums/openai.enum';
-import { OpenaiMessage } from '../../models/entities/openai.chat.entity';
+import { OpenaiRoleEnum } from '../../models/enums/openai.enum';
 
 @Injectable()
 export class AnthropicRepositoryImplementationService
@@ -41,7 +38,7 @@ export class AnthropicRepositoryImplementationService
   ) {}
 
   async chatCompletion(
-    chat: ChatEntity,
+    chat: ChatCompletionEntity,
     data: { [key: string]: any },
   ): Promise<ChatResponse> {
     const { anthropic } = data;
@@ -50,17 +47,31 @@ export class AnthropicRepositoryImplementationService
       throw CustomError.internal('Anthropic API data not found');
     }
 
-    const payload: AnthropicChatEntityRequest =
-      chat.payload as AnthropicChatEntityRequest;
+    const payload: AnthropicChatEntityRequest = {
+      messages: [
+        {
+          role: AnthropicRoleEnum.USER,
+          content: [
+            {
+              text: chat.message,
+            },
+          ],
+        },
+      ],
+    } as AnthropicChatEntityRequest;
+
+    if (!payload.messages || payload.messages.length === 0) {
+      throw CustomError.badRequest('Messages not found');
+    }
 
     this.logger.log(`Chat completion with payload: ${JSON.stringify(payload)}`);
 
     let session: SessionChat | null =
       await this.chatDatasource.getSession(chat);
 
-    const model: string = AnthropicModelEnum.CLAUDE_3_5_SONNET;
-
     if (!session) {
+      const model: string = AnthropicModelEnum.CLAUDE_3_5_SONNET;
+
       const sessionChat: SessionChat = {
         provider: chat.provider,
         session: chat.session,
@@ -73,7 +84,7 @@ export class AnthropicRepositoryImplementationService
         messages: [
           {
             role: OpenaiRoleEnum.USER,
-            content: payload.messages[payload.messages.length - 1].content,
+            content: payload.messages[payload.messages.length - 1].content[0],
           },
         ],
       };
@@ -86,7 +97,7 @@ export class AnthropicRepositoryImplementationService
     } else {
       const sessionMessage: SessionMessage = {
         role: OpenaiRoleEnum.USER,
-        content: payload.messages[payload.messages.length - 1].content,
+        content: payload.messages[payload.messages.length - 1].content[0],
       };
       session.messages.push(sessionMessage);
 
@@ -101,7 +112,7 @@ export class AnthropicRepositoryImplementationService
       (message: SessionMessage) =>
         ({
           role: message.role,
-          content: message.content,
+          content: message.content.text || '',
         }) as AnthropicMessage,
     );
 
@@ -123,7 +134,7 @@ export class AnthropicRepositoryImplementationService
       },
       body: {
         ...session.payload,
-        ...payload,
+        messages: payload.messages,
       },
       isFormData: false,
     };
@@ -148,7 +159,7 @@ export class AnthropicRepositoryImplementationService
 
       session.messages.push({
         role: OpenaiRoleEnum.ASSISTANT,
-        content: message.text || '',
+        content: { text: message.text || '' },
       } as SessionMessage);
 
       const sessionUpdated = await this.chatDatasource.updateSession(session);

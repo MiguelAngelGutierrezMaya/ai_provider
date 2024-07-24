@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ChatRepository } from '../../models/repositories/chat.repository';
 import {
   ProviderEnum,
@@ -8,6 +8,8 @@ import { OpenaiRepositoryImplementationService } from '../repositories/openai.re
 import { FetchHttpClientService } from '../../../shared/infrastructure/utils/fetch_http_client.service';
 import { AnthropicRepositoryImplementationService } from '../repositories/anthropic.repository.implementation.service';
 import { MongoDatasourceImplementationService } from '../datasources/mongo.datasource.implementation.service';
+import { GoogleRepositoryImplementationService } from '../repositories/google.repository.implementation.service';
+import { HuggingfaceRepositoryImplementationService } from '../repositories/huggingface.repository.implementation.service';
 
 @Injectable()
 export class FactoryService {
@@ -22,8 +24,13 @@ export class FactoryService {
         this.fetchHttpClientService,
         this.mongoDatasourceImplementationService,
       ),
-      [ProviderEnum.GOOGLE]: null,
-      [ProviderEnum.HUGGING_FACE]: null,
+      [ProviderEnum.GOOGLE]: new GoogleRepositoryImplementationService(
+        this.mongoDatasourceImplementationService,
+      ),
+      [ProviderEnum.HUGGING_FACE]:
+        new HuggingfaceRepositoryImplementationService(
+          this.mongoDatasourceImplementationService,
+        ),
       [ProviderEnum.ANTHROPIC]: new AnthropicRepositoryImplementationService(
         this.fetchHttpClientService,
         this.mongoDatasourceImplementationService,
