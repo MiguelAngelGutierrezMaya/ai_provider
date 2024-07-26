@@ -13,12 +13,14 @@ import { HttpCodeConstants } from '../../../shared/models/constants/http-code.co
 import { Response } from 'express';
 import { ChatCompletionDto } from '../dtos/chat.dto';
 import { ChatMapper } from '../mapper/chat.mapper';
-import { FactoryService } from '../services/factory.service';
 import { ChatRepository } from '../../models/repositories/chat.repository';
 import { CustomResponseInterface } from '../../../shared/models/interfaces/custom-response.interface';
 import { ConfigService } from '@nestjs/config';
 import { ProviderUseCase } from '../../application/useCases/provider.use-case';
 import { ChatCompletionEntity } from '../../models/entities/chat.entity';
+import { MongoDatasourceImplementationService } from '../datasources/mongo.datasource.implementation.service';
+import { FetchHttpClientService } from '../../../shared/infrastructure/utils/fetch_http_client.service';
+import { FactoryService } from '../services/factory.service';
 
 @Controller('conversation')
 export class ConversationController {
@@ -27,8 +29,9 @@ export class ConversationController {
     new HandleErrorService();
 
   constructor(
-    private readonly factoryService: FactoryService,
     private readonly configService: ConfigService,
+    private readonly fetchHttpClientService: FetchHttpClientService,
+    private readonly mongoDatasourceImplementationService: MongoDatasourceImplementationService,
   ) {}
 
   // @Get()
@@ -56,10 +59,7 @@ export class ConversationController {
     @Res() response: Response,
   ): Promise<Response<CustomResponseInterface> | HttpException> {
     try {
-      const provider: ChatRepository = ProviderUseCase.getProvider(
-        this.factoryService,
-        data.provider,
-      );
+      const provider: ChatRepository = this.getProvider(data.provider);
 
       const customResponse = {
         message: '',
@@ -93,5 +93,13 @@ export class ConversationController {
       this.logger.error(error);
       return this.handeErrorUtils.handle(error);
     }
+  }
+
+  private getProvider(provider: string): ChatRepository {
+    return FactoryService.getProvider(
+      provider,
+      this.fetchHttpClientService,
+      this.mongoDatasourceImplementationService,
+    );
   }
 }

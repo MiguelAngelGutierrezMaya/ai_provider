@@ -1,39 +1,34 @@
-import { Injectable } from '@nestjs/common';
 import { ChatRepository } from '../../models/repositories/chat.repository';
 import {
   ProviderEnum,
   ProviderType,
 } from '../../../shared/models/enums/provider.enum';
 import { OpenaiRepositoryImplementationService } from '../repositories/openai.repository.implementation.service';
-import { FetchHttpClientService } from '../../../shared/infrastructure/utils/fetch_http_client.service';
 import { AnthropicRepositoryImplementationService } from '../repositories/anthropic.repository.implementation.service';
-import { MongoDatasourceImplementationService } from '../datasources/mongo.datasource.implementation.service';
 import { GoogleRepositoryImplementationService } from '../repositories/google.repository.implementation.service';
 import { HuggingfaceRepositoryImplementationService } from '../repositories/huggingface.repository.implementation.service';
+import { HttpUtil } from '../../../shared/models/utils/http.util';
+import { ChatDatasource } from '../../models/datasource/chat.datasource';
 
-@Injectable()
 export class FactoryService {
-  constructor(
-    private readonly fetchHttpClientService: FetchHttpClientService,
-    private readonly mongoDatasourceImplementationService: MongoDatasourceImplementationService,
-  ) {}
-
-  public getProvider(provider: string): ChatRepository | null {
+  static getProvider(
+    provider: string,
+    httpUtil: HttpUtil,
+    chatDatasource: ChatDatasource,
+  ): ChatRepository | null {
     const providers: { [key in ProviderType]: ChatRepository | null } = {
       [ProviderEnum.OPENAI]: new OpenaiRepositoryImplementationService(
-        this.fetchHttpClientService,
-        this.mongoDatasourceImplementationService,
+        httpUtil,
+        chatDatasource,
       ),
       [ProviderEnum.GOOGLE]: new GoogleRepositoryImplementationService(
-        this.mongoDatasourceImplementationService,
+        chatDatasource,
       ),
       [ProviderEnum.HUGGING_FACE]:
-        new HuggingfaceRepositoryImplementationService(
-          this.mongoDatasourceImplementationService,
-        ),
+        new HuggingfaceRepositoryImplementationService(chatDatasource),
       [ProviderEnum.ANTHROPIC]: new AnthropicRepositoryImplementationService(
-        this.fetchHttpClientService,
-        this.mongoDatasourceImplementationService,
+        httpUtil,
+        chatDatasource,
       ),
     };
 

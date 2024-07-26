@@ -105,8 +105,6 @@ export class GoogleRepositoryImplementationService implements ChatRepository {
 
     this.logger.log(`Chat completion with API key: ${apiKey}`);
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-
     const modelParams: ModelParams = {
       ...session.payload,
     } as ModelParams;
@@ -131,11 +129,12 @@ export class GoogleRepositoryImplementationService implements ChatRepository {
       `Data to be sent: modelParams => ${JSON.stringify(modelParams)}, startChatParams => ${JSON.stringify(startChatParams)}, lastMessage => ${JSON.stringify(lastMessage)}, prompt => ${prompt}`,
     );
 
-    const modelAI: GenerativeModel = genAI.getGenerativeModel(modelParams);
-
-    const chatSession: ChatSession = modelAI.startChat(startChatParams);
-
-    const result: GenerateContentResult = await chatSession.sendMessage(prompt);
+    const result: GenerateContentResult = await this.processChatResponse(
+      apiKey,
+      prompt,
+      modelParams,
+      startChatParams,
+    );
 
     this.logger.log(`Response from google: ${JSON.stringify(result)}`);
 
@@ -190,5 +189,20 @@ export class GoogleRepositoryImplementationService implements ChatRepository {
         text: messageResponse,
       } as GoogleMessagePart,
     };
+  }
+
+  async processChatResponse(
+    apiKey: string,
+    prompt: string,
+    modelParams: ModelParams,
+    startChatParams: StartChatParams,
+  ): Promise<GenerateContentResult> {
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    const modelAI: GenerativeModel = genAI.getGenerativeModel(modelParams);
+
+    const chatSession: ChatSession = modelAI.startChat(startChatParams);
+
+    return await chatSession.sendMessage(prompt);
   }
 }

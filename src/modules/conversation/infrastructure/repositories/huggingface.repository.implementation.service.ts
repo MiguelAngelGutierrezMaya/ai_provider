@@ -18,6 +18,7 @@ import {
   HugginFaceModelEnum,
   HugginFaceRoleEnum,
 } from '../../models/enums/hugginface.enum';
+import type { ChatCompletionOutput } from '@huggingface/tasks';
 
 @Injectable()
 export class HuggingfaceRepositoryImplementationService
@@ -125,8 +126,6 @@ export class HuggingfaceRepositoryImplementationService
 
     this.logger.log(`API Key: ${apiKey}`);
 
-    const hf = new HfInference(apiKey, {});
-
     const dataToBeSent: { [key: string]: any } = {
       ...session.payload,
       ...payload,
@@ -134,7 +133,10 @@ export class HuggingfaceRepositoryImplementationService
 
     this.logger.log(`Data to be sent: ${JSON.stringify(dataToBeSent)}`);
 
-    const response = await hf.chatCompletion(dataToBeSent);
+    const response: ChatCompletionOutput = await this.processChatResponse(
+      apiKey,
+      dataToBeSent,
+    );
 
     this.logger.log(`Response from Hugging face: ${JSON.stringify(response)}`);
 
@@ -172,5 +174,13 @@ export class HuggingfaceRepositoryImplementationService
       session: chat.session,
       payload: message,
     } as ChatResponse;
+  }
+
+  async processChatResponse(
+    apiKey: string,
+    dataToBeSent: { [key: string]: any },
+  ): Promise<ChatCompletionOutput> {
+    const huggingFaceInference: HfInference = new HfInference(apiKey, {});
+    return await huggingFaceInference.chatCompletion(dataToBeSent);
   }
 }

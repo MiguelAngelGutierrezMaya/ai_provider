@@ -8,6 +8,7 @@ import {
   GoogleChatEntityResponse,
   GoogleMessagePart,
 } from './google.chat.entity';
+import { HugginFaceMessage } from './huggingface.chat.entity';
 
 //
 // ChatEntity
@@ -27,7 +28,7 @@ export interface ChatResponse {
     | OpenaiMessage
     | AnthropicMessageContent
     | GoogleMessagePart
-    | { [key: string]: any };
+    | HugginFaceMessage;
 }
 
 //

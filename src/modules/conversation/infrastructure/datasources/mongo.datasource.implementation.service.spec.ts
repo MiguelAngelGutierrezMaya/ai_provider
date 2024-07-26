@@ -4,62 +4,15 @@ import { getModelToken } from '@nestjs/mongoose';
 import { SessionChat as SessionChatMongo } from '../persistence/mongodb/schemas/session-chat.schema';
 import { BillingProvider } from '../../../shared/infrastructure/persistence/mongodb/schemas/billing-provider.schema';
 import {
-  BillingInfo,
   ChatCompletionEntity,
   SessionChat,
 } from '../../models/entities/chat.entity';
 import { ProviderEnum } from '../../../shared/models/enums/provider.enum';
-
-const sessionChat: { [key: string]: any } = {
-  _id: 'id',
-  messages: [],
-  payload: {},
-  created_at: new Date(),
-  updated_at: new Date(),
-};
-
-class SessionChatMongoMock {
-  constructor(private _: SessionChat) {}
-
-  static findOne = ({
-    provider,
-    session,
-  }: {
-    provider: string;
-    session: string;
-  }) => ({
-    exec: () => ({
-      provider,
-      session,
-      ...sessionChat,
-    }),
-  });
-
-  static findOneAndUpdate = (data: { [key: string]: any }) => ({
-    exec: () => ({
-      ...data.filter,
-      ...sessionChat,
-    }),
-  });
-
-  public save = () => sessionChat;
-}
-
-const billingInfo: BillingInfo = {
-  provider: ProviderEnum.OPENAI,
-  payload: {},
-  created_at: new Date(),
-  updated_at: new Date(),
-  session: 'session',
-  context: {},
-  id: 'id',
-};
-
-class BillingProviderMock {
-  constructor(private _: BillingInfo) {}
-
-  public save = () => billingInfo;
-}
+import { sessionChat, SessionChatMongoMock } from '../mocks/session-class.mock';
+import {
+  billingInfo,
+  BillingProviderMock,
+} from '../mocks/billing-provider.mock';
 
 describe('MongoDatasourceImplementationService', () => {
   let service: MongoDatasourceImplementationService;

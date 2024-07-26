@@ -3,20 +3,28 @@ import { Module } from '@nestjs/common';
 //
 // Controllers
 //
-import { AppController } from '../controllers/app.controller';
+// import { AppController } from '../controllers/app.controller';
 
 //
 // Services
 //
-import { AppService } from '../services/app.service';
+// import { AppService } from '../services/app.service';
 
 //
 // Business modules
 //
 import { ConversationModule } from '../../modules/conversation/infrastructure/modules/conversation.module';
+
+//
+// Configurations
+//
 import { ConfigModule } from '@nestjs/config';
 import configuration from '../config/configuration';
 import databaseConfig from '../config/database.config';
+
+//
+// Third-party modules
+//
 import { MongoModule } from '../databases/mongo.module';
 
 @Module({
@@ -30,7 +38,7 @@ import { MongoModule } from '../databases/mongo.module';
     // Business modules
     ConversationModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
