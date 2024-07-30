@@ -12,6 +12,12 @@ export class ChatCompletionDto {
 
   @IsNotEmpty()
   @IsString()
-  message: string;
+  readonly message: string;
   // payload: { [key: string]: any };
+}
+
+export class ChatCompletionImageDto extends ChatCompletionDto {
+  @IsNotEmpty()
+  @IsString()
+  readonly image: string;
 }

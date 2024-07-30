@@ -3,6 +3,7 @@ import { ChatRepository } from '../../models/repositories/chat.repository';
 import {
   BillingInfo,
   ChatCompletionEntity,
+  ChatCompletionImageEntity,
   ChatResponse,
   SessionChat,
   SessionMessage,
@@ -189,5 +190,14 @@ export class OpenaiRepositoryImplementationService implements ChatRepository {
       session: chat.session,
       payload: message,
     };
+  }
+
+  async chatCompletionImage(
+    chat: ChatCompletionImageEntity,
+    data: { [key: string]: any },
+  ): Promise<ChatResponse> {
+    console.log('chatCompletionImage', chat, data);
+
+    return {} as ChatResponse;
   }
 }

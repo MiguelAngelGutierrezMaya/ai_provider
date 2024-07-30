@@ -4,6 +4,7 @@ import { ChatDatasource } from '../../models/datasource/chat.datasource';
 import {
   BillingInfo,
   ChatCompletionEntity,
+  ChatCompletionImageEntity,
   ChatResponse,
   SessionChat,
   SessionMessage,
@@ -182,5 +183,14 @@ export class HuggingfaceRepositoryImplementationService
   ): Promise<ChatCompletionOutput> {
     const huggingFaceInference: HfInference = new HfInference(apiKey, {});
     return await huggingFaceInference.chatCompletion(dataToBeSent);
+  }
+
+  async chatCompletionImage(
+    chat: ChatCompletionImageEntity,
+    data: { [key: string]: any },
+  ): Promise<ChatResponse> {
+    console.log('chatCompletionImage', chat, data);
+
+    return {} as ChatResponse;
   }
 }

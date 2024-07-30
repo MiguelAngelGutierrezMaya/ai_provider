@@ -4,6 +4,7 @@ import { HttpUtil } from '../../../shared/models/utils/http.util';
 import {
   BillingInfo,
   ChatCompletionEntity,
+  ChatCompletionImageEntity,
   ChatResponse,
   SessionChat,
   SessionMessage,
@@ -183,5 +184,14 @@ export class AnthropicRepositoryImplementationService
       session: chat.session,
       payload: message,
     };
+  }
+
+  async chatCompletionImage(
+    chat: ChatCompletionImageEntity,
+    data: { [key: string]: any },
+  ): Promise<ChatResponse> {
+    console.log('chatCompletionImage', chat, data);
+
+    return {} as ChatResponse;
   }
 }

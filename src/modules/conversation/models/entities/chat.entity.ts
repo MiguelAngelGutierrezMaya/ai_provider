@@ -11,12 +11,19 @@ import {
 import { HugginFaceMessage } from './huggingface.chat.entity';
 
 //
-// ChatEntity
+// ChatCompletionEntity
 //
 export interface ChatCompletionEntity {
   provider: ProviderType;
   session: string;
   message: string;
+}
+
+//
+// ChatCompletionImageEntity
+//
+export interface ChatCompletionImageEntity extends ChatCompletionEntity {
+  image: string;
 }
 
 //

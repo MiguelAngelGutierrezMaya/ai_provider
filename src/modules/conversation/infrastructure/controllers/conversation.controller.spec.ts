@@ -7,7 +7,7 @@ import { getModelToken } from '@nestjs/mongoose';
 import { SessionChat as SessionChatMongo } from '../persistence/mongodb/schemas/session-chat.schema';
 import { BillingProvider } from '../../../shared/infrastructure/persistence/mongodb/schemas/billing-provider.schema';
 import { ConfigService } from '@nestjs/config';
-import { ChatCompletionDto } from '../dtos/chat.dto';
+import { ChatCompletionDto, ChatCompletionImageDto } from '../dtos/chat.dto';
 import { Response } from 'express';
 import { CustomResponseInterface } from '../../../shared/models/interfaces/custom-response.interface';
 import { HttpException } from '@nestjs/common';
@@ -17,6 +17,7 @@ import { ProviderEnum } from '../../../shared/models/enums/provider.enum';
 import { ChatRepository } from '../../models/repositories/chat.repository';
 import {
   ChatCompletionEntity,
+  ChatCompletionImageEntity,
   ChatResponse,
 } from '../../models/entities/chat.entity';
 
@@ -103,6 +104,45 @@ describe('ConversationController', () => {
         message: 'message',
         sessionID: 'session-id',
       } as ChatCompletionDto,
+      responseObj,
+    )) as Response<CustomResponseInterface> | HttpException;
+
+    expect(response).toBeDefined();
+    expect(response.status).toBe(true);
+  });
+
+  it('should post chat image', async () => {
+    const responseObj = {
+      status: (status: number) => ({
+        send: (response: { [key: string]: any }) => {
+          return {
+            status,
+            ...response,
+          };
+        },
+      }),
+    } as any;
+
+    jest.spyOn(FactoryService, 'getProvider').mockReturnValue({
+      chatCompletionImage(
+        chat: ChatCompletionImageEntity,
+        data: { [p: string]: any },
+      ): Promise<ChatResponse> {
+        return Promise.resolve({
+          session: chat.session,
+          ...data,
+          payload: {},
+        } as ChatResponse);
+      },
+    } as ChatRepository);
+
+    const response: { [key: string]: any } = (await controller.postImage(
+      {
+        provider: ProviderEnum.OPENAI,
+        message: 'message',
+        sessionID: 'session-id',
+        image: 'image',
+      } as ChatCompletionImageDto,
       responseObj,
     )) as Response<CustomResponseInterface> | HttpException;
 

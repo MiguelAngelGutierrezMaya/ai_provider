@@ -1,7 +1,8 @@
-import { ChatCompletionDto } from '../dtos/chat.dto';
+import { ChatCompletionDto, ChatCompletionImageDto } from '../dtos/chat.dto';
 import {
   BillingInfo,
   ChatCompletionEntity,
+  ChatCompletionImageEntity,
   SessionChat,
   SessionMessage,
 } from '../../models/entities/chat.entity';
@@ -40,6 +41,27 @@ export class ChatMapper {
       session: sessionID,
       message: message,
     };
+  }
+
+  static chatImageDtoToEntity(
+    chatDto: ChatCompletionImageDto,
+  ): ChatCompletionImageEntity {
+    const { provider, message, sessionID, image } = chatDto;
+
+    const chatCompletionEntity: ChatCompletionEntity = this.chatDtoToEntity({
+      message: message,
+      provider: provider,
+      sessionID: sessionID,
+    } as ChatCompletionDto);
+
+    if (!image) {
+      throw CustomError.badRequest('Image is required');
+    }
+
+    return {
+      ...chatCompletionEntity,
+      image: image,
+    } as ChatCompletionImageEntity;
   }
 
   static sessionSchemaToEntity(sessionSchema: {

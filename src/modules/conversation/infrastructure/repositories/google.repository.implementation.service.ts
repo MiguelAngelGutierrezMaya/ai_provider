@@ -4,6 +4,7 @@ import { ChatDatasource } from '../../models/datasource/chat.datasource';
 import {
   BillingInfo,
   ChatCompletionEntity,
+  ChatCompletionImageEntity,
   ChatResponse,
   SessionChat,
   SessionMessage,
@@ -204,5 +205,14 @@ export class GoogleRepositoryImplementationService implements ChatRepository {
     const chatSession: ChatSession = modelAI.startChat(startChatParams);
 
     return await chatSession.sendMessage(prompt);
+  }
+
+  async chatCompletionImage(
+    chat: ChatCompletionImageEntity,
+    data: { [key: string]: any },
+  ): Promise<ChatResponse> {
+    console.log('chatCompletionImage', chat, data);
+
+    return {} as ChatResponse;
   }
 }
